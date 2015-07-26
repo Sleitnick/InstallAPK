@@ -7,12 +7,9 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import javax.swing.JButton;
@@ -25,10 +22,15 @@ import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.text.Document;
 
 
 
+/**
+ * App<p>
+ * Main application class
+ * @author Stephen Leitnick
+ *
+ */
 public class App {
 	
 	private JFrame frame;
@@ -41,24 +43,24 @@ public class App {
 	
 	private AppSettings settings = AppSettings.load();
 	
-	private void centerFrame() {
-		Dimension size = frame.getSize();
-		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-		frame.setLocation((int)((screen.getWidth() - size.getWidth()) / 2.0), (int)((screen.getHeight() - size.getHeight()) / 2.0));
-	}
-	
+	// Install the current 'selectedApkFile' using ADB:
 	private void installApk() {
 		if (installing) return;
 		installBtn.setEnabled(false);
 		installing = true;
 		new Thread(() -> {
 			try {
+				
 				String sep = System.getProperty("line.separator");
 				String cmd = "adb install -r " + selectedApkFile.getAbsolutePath();
 				ProcessBuilder builder = new ProcessBuilder("adb", "install", "-r", selectedApkFile.getAbsolutePath());
 				output.setText(cmd);
+				
+				// Run installation:
 				Process process = builder.start();
 				process.waitFor();
+				
+				// Out:
 				BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 				StringBuilder sb = new StringBuilder();
 				String line;
@@ -88,6 +90,7 @@ public class App {
 		}).start();
 	}
 	
+	// Create the user interface:
 	private void createGui() {
 		
 		frame = new JFrame("Install APK");
@@ -95,8 +98,8 @@ public class App {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		fileChooser = new JFileChooser(System.getProperty("user.home"));
-		
 		fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+		// Only show .APK files:
 		fileChooser.setFileFilter(new FileFilter() {
 			private final String DESCRIPTION = "APK (*.apk)";
 			@Override
@@ -122,6 +125,7 @@ public class App {
 		tfield.setEditable(false);
 		contentPane.add(tfield);
 		{
+			// Load last selected APK from settings if exists:
 			if (settings.containsKey("selectedFile")) {
 				String selectedFilePath = (String)settings.get("selectedFile");
 				File selectedFile = new File(selectedFilePath);
@@ -164,6 +168,7 @@ public class App {
 		layout.putConstraint(SpringLayout.NORTH, outputScrollPane, 60, SpringLayout.NORTH, contentPane);
 		layout.putConstraint(SpringLayout.SOUTH, outputScrollPane, -5, SpringLayout.SOUTH, contentPane);
 		
+		// Browse... button:
 		browseDir.addActionListener((ActionEvent event) -> {
 			int returnVal = fileChooser.showOpenDialog(frame);
 			if (JFileChooser.APPROVE_OPTION == returnVal) {
@@ -175,10 +180,12 @@ public class App {
 			}
 		});
 		
+		// Install APK button:
 		installBtn.addActionListener((ActionEvent event) -> {
 			installApk();
 		});
 		
+		// Save settings when window is closed:
 		frame.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
@@ -187,7 +194,14 @@ public class App {
 			}
 		});
 		
-		centerFrame();
+		// Center frame on screen:
+		{
+			Dimension size = frame.getSize();
+			Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+			frame.setLocation((int)((screen.getWidth() - size.getWidth()) / 2.0), (int)((screen.getHeight() - size.getHeight()) / 2.0));
+		}
+		
+		// Show frame:
 		frame.pack();
 		frame.setResizable(false);
 		frame.setVisible(true);
@@ -204,6 +218,7 @@ public class App {
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
+		// Launch:
 		new App();
 	}
 
