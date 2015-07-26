@@ -7,11 +7,13 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -199,6 +201,14 @@ public class App {
 			Dimension size = frame.getSize();
 			Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 			frame.setLocation((int)((screen.getWidth() - size.getWidth()) / 2.0), (int)((screen.getHeight() - size.getHeight()) / 2.0));
+		}
+		
+		// Set icon:
+		try {
+			BufferedImage icon = ImageIO.read(getClass().getResourceAsStream("icon.png"));
+			frame.setIconImage(icon);
+		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
 		
 		// Show frame:
